@@ -43,24 +43,22 @@ function renderPage() {
                brewery.brewery_type === "regional" || 
                brewery.brewery_type === "micro"
       //filteredBreweries has up to 50 breweries with the filters
-      })
       //we give name to js-data-from-server
       //HERE I CAN GUARANTEE THE BREWERIES ARE BACK 
-      // console.log(`This is breweriesFromServer not in the state yet: `, breweriesFromServer) //here we have the breweriesFromServer in js-obj
+
+      //console.log(`This is breweriesFromServer not in the state yet: `, breweriesFromServer) //here we have the breweriesFromServer in js-obj
+      })
+      //I only want to show 10 breweries to the user and then store them into the state.breweries:
       let slicedBreweries = filteredBreweries.slice(0, 10)
-      
       state.breweries = slicedBreweries
-
-
-      //here, we have the STATE FILL with the list of breweries requested
+      //at this point, we have the STATE FILL with the list of breweries requested
       console.log(`This is my state.breweries now, filtered and sliced: `, state.breweries)
       
       stateSearchFormEl.reset()
 
-      createAsideInMain() //need all cities names from server or hardcoded???
+      createAsideInMain() // TO DO: 🧾📌 cities from server in the aside
       createSearchFormMain() //user searches for words/name 
-      
-      createListOfBreweries(state.breweries) //article with Ul and f to create the Li of each Brewery
+      createListOfBreweries(state.breweries)
     })
   })
 }
@@ -77,7 +75,7 @@ function getUSBreweriesByStateFromServer (userStateInput) {
 }
 
 //QUESTION:
-//in che checkboxes, we need all cities' names from server or hardcoded???
+//in che checkboxes, we need all cities' names from server. // TO DO: 🧾📌
 //this function creates the ASIDE 
 //NEEDS: the filters by cities 
 function createAsideInMain () {
@@ -101,6 +99,8 @@ function createAsideInMain () {
    selectEl.setAttribute(`name`, `filter-by-type`)
    selectEl.setAttribute(`id`, `filter-by-type`)
    
+  // somewhere here the eventListener to show just the filtered-breweries selected by user // TO DO: 🧾📌
+
    let optionSelectATypeEl = createEl(`option`)
    optionSelectATypeEl.setAttribute(`value`, `""`)
    optionSelectATypeEl.innerText = "Select a type..."
@@ -130,8 +130,8 @@ function createAsideInMain () {
    let formFilterByCityEl = createEl(`form`)
    formFilterByCityEl.setAttribute(`id`, `filter-by-city-form`)
    
-
-   //FOR LOOP HERE !!! ------------------------------------------- <<<---
+   //FOR-LOOP HERE !!! ------------------------------------------- <<<--- // TO DO: 🧾📌
+   //somewhere here eventListener to filter the breweries per city/ies selected by user // TO DO: 🧾📌
    let inputCheckboxEl = createEl(`input`)
    inputCheckboxEl.setAttribute(`type`, `checkbox`)
    inputCheckboxEl.setAttribute(`name`, state.breweries.city) //here there will be the value NAME OF THE CITY
@@ -174,7 +174,7 @@ function createSearchFormMain() {
   inputSearchHeaderEl.setAttribute(`name`, `search-breweries`)
   inputSearchHeaderEl.setAttribute(`type`, `text`)
 
-  //HERE f for the INPUT WITH DATA TO FILTER -----------------------------------
+  //HERE f for the INPUT WITH any-word-written by user to filter in DATA-------------// TO DO: 🧾📌
 
   let articleListEl = createEl(`article`)
 
@@ -189,12 +189,12 @@ function createSearchFormMain() {
 }
 
 function createListOfBreweries(breweries) {
-  // RESET THE MAIN LIST OF PREVIOUS SEARCHES <<<<<<<---------------TO DO 🧾📌✅
+  // RESET THE LIST OF PREVIOUS SEARCHES:
   let ulListOfBreweries = document.querySelector(`.breweries-list`)
   ulListOfBreweries.innerHTML = ""
 
   for (const brewery of breweries) { //brew is the entire obj
-    //so here I have access to EACH OBJ of EACH BREWERY, every cycle of the loop
+    //so here I have access to EACH OBJ of EACH BREWERY, for every cycle of the loop:
     create1BrewOfBreweries(brewery) 
     console.log(brewery)
   }
@@ -203,7 +203,6 @@ function createListOfBreweries(breweries) {
 // this is inside createListofBreweries()
 function create1BrewOfBreweries(brewery) {
 
-  //for loop needed here
   let ulListOfBreweries = document.querySelector(`.breweries-list`)
 
   let liBreweryEl = createEl(`li`)
