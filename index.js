@@ -33,34 +33,33 @@ function renderPage() {
     // console.log(`User Input: `, userInput)
 
     console.log(`Search from User: `, searchFromUser)
-    fetchFunc(searchFromUser) //here we give a name to the data js received from the server
-    //here, after f fetchFunc, we have the STATE FILL with the list of breweries requested
-    createListOfBreweries(state.breweries) //article with Ul and f to create the Li of each Brewery
-    // state.breweries.forEach(el => console.log(el));
+    
+    //***FETCH***
+    getBreweriesFromServer(searchFromUser).then(function(breweriesFromServer) {   //we give name to js-data-from-server
+      //HERE I CAN GUARANTEE THE BREWERIES ARE BACK 
+      // console.log(`This is breweriesFromServer not in the state yet: `, breweriesFromServer) //here we have the breweriesFromServer in js-obj
+      
+      state.breweries = breweriesFromServer
+      //here, we have the STATE FILL with the list of breweries requested
+      console.log(`This is my state.breweries now: `, state.breweries)
 
+      createAsideInMain() //need all cities names from server or hardcoded???
+      createSearchFormMain() //user searches for words/name 
+      
+      createListOfBreweries(state.breweries) //article with Ul and f to create the Li of each Brewery
+    })
   })
-  
-  createAsideInMain() //need all cities names from server or hardcoded???
-  createGeneralFormSearchInMain() //user searches for words/name 
 }
 
 //FUNCTION TO FETCH FROM SERVER
-function fetchFunc (userStateInput) {
-
-  
+function getBreweriesFromServer (userStateInput) {
   return fetch(`https://api.openbrewerydb.org/breweries?by_state=${userStateInput}`)
-  .then(function (res) {
-    // console.log(res)
-    return res.json() //trasform json-data into js-data (obj)
+  .then(function (response) {
+    // console.log(response)
+    return response.json() //trasform json-data into js-data (obj)
   })
-  .then( function(data) {
-    // console.log(`This is data not in the state yet: `, data) //here we have the data in js-obj
-    state.breweries = data
-      console.log(`This is my state now: `, state.breweries)
-    // state.breweries.forEach(el => console.log(el));
-
-    })
 }
+
 
 //QUESTION:
 //in che checkboxes, we need all cities' names from server or hardcoded???
@@ -136,7 +135,7 @@ function createAsideInMain () {
 }
 
 //here user searches for words/name
-function createGeneralFormSearchInMain() {
+function createSearchFormMain() {
   let h1ListSectionEl = createEl(`h1`)
   h1ListSectionEl.innerText = "List of Breweries"
 
@@ -160,23 +159,19 @@ function createGeneralFormSearchInMain() {
 
   //HERE f for the INPUT WITH DATA TO FILTER -----------------------------------
 
-  main.append(h1ListSectionEl, headerEl)
-  headerEl.append(formHeader)
-  formHeader.append(labelSearchHeader, inputSearchHeaderEl)
-  labelSearchHeader.append(h2LabelSearchHeaderEl)
-}
-
-function createListOfBreweries(breweries) {
-
   let articleListEl = createEl(`article`)
 
   let ulListOfBreweries = createEl(`ul`)
   ulListOfBreweries.setAttribute(`class`, `breweries-list`)
 
-  main.append(articleListEl)
+  main.append(h1ListSectionEl, headerEl, articleListEl)
+  headerEl.append(formHeader)
+  formHeader.append(labelSearchHeader, inputSearchHeaderEl)
+  labelSearchHeader.append(h2LabelSearchHeaderEl)
   articleListEl.append(ulListOfBreweries)
+}
 
-  // state.breweries.forEach(el => console.log(el));
+function createListOfBreweries(breweries) {
 
   for (const brewery of breweries) { //brew is the entire obj
     //so here I have access to EACH OBJ of EACH BREWERY, every cycle of the loop
@@ -189,7 +184,7 @@ function createListOfBreweries(breweries) {
 function create1BrewOfBreweries(brewery) {
 
   //for loop needed here
-  let ulListOfBreweries = querySelector(`.breweries-list`)
+  let ulListOfBreweries = document.querySelector(`.breweries-list`)
 
   let liBreweryEl = createEl(`li`)
 
