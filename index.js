@@ -1,3 +1,6 @@
+// LEGEND:
+// TO DO: 🧾📌
+// BUG to FIX: ⭕❗
 
 /*
 1. ✔ get state from user, and reformat to: lowercase, underscore instead of space
@@ -31,17 +34,28 @@ function renderPage() {
     userInput = userInput.toLowerCase().replace(" ", "_")
     searchFromUser = userInput
     // console.log(`User Input: `, userInput)
-
     console.log(`Search from User: `, searchFromUser)
     
-    //***FETCH***
-    getBreweriesFromServer(searchFromUser).then(function(breweriesFromServer) {   //we give name to js-data-from-server
+    //***FETCH WITH FILTER***
+    getUSBreweriesByStateFromServer(searchFromUser).then(function(breweriesFromServer) {
+      let filteredBreweries = breweriesFromServer.filter(function(brewery){
+        return brewery.brewery_type === "brewpub" || 
+               brewery.brewery_type === "regional" || 
+               brewery.brewery_type === "micro"
+      //filteredBreweries has up to 50 breweries with the filters
+      })
+      //we give name to js-data-from-server
       //HERE I CAN GUARANTEE THE BREWERIES ARE BACK 
       // console.log(`This is breweriesFromServer not in the state yet: `, breweriesFromServer) //here we have the breweriesFromServer in js-obj
+      let slicedBreweries = filteredBreweries.slice(0, 10)
       
-      state.breweries = breweriesFromServer
+      state.breweries = slicedBreweries
+
+
       //here, we have the STATE FILL with the list of breweries requested
-      console.log(`This is my state.breweries now: `, state.breweries)
+      console.log(`This is my state.breweries now, filtered and sliced: `, state.breweries)
+      
+      stateSearchFormEl.reset()
 
       createAsideInMain() //need all cities names from server or hardcoded???
       createSearchFormMain() //user searches for words/name 
@@ -51,15 +65,16 @@ function renderPage() {
   })
 }
 
+//ADD= &per_page=10 // we don't put this in the fetch so we can fetch more than 10 to filter
+//SYNTAX: https://api.openbrewerydb.org/breweries?per_page=25
 //FUNCTION TO FETCH FROM SERVER
-function getBreweriesFromServer (userStateInput) {
-  return fetch(`https://api.openbrewerydb.org/breweries?by_state=${userStateInput}`)
+function getUSBreweriesByStateFromServer (userStateInput) {
+  return fetch(`https://api.openbrewerydb.org/breweries?by_state=${userStateInput}&per_page=50`)
   .then(function (response) {
     // console.log(response)
     return response.json() //trasform json-data into js-data (obj)
   })
 }
-
 
 //QUESTION:
 //in che checkboxes, we need all cities' names from server or hardcoded???
@@ -114,10 +129,12 @@ function createAsideInMain () {
 
    let formFilterByCityEl = createEl(`form`)
    formFilterByCityEl.setAttribute(`id`, `filter-by-city-form`)
+   
 
+   //FOR LOOP HERE !!! ------------------------------------------- <<<---
    let inputCheckboxEl = createEl(`input`)
    inputCheckboxEl.setAttribute(`type`, `checkbox`)
-   inputCheckboxEl.setAttribute(`name`, ``) //here there will be the value NAME OF THE CITY
+   inputCheckboxEl.setAttribute(`name`, state.breweries.city) //here there will be the value NAME OF THE CITY
    inputCheckboxEl.setAttribute(`value`, ``) 
 
    let labelCityEl = createEl(`label`)
@@ -172,6 +189,9 @@ function createSearchFormMain() {
 }
 
 function createListOfBreweries(breweries) {
+  // RESET THE MAIN LIST OF PREVIOUS SEARCHES <<<<<<<---------------TO DO 🧾📌✅
+  let ulListOfBreweries = document.querySelector(`.breweries-list`)
+  ulListOfBreweries.innerHTML = ""
 
   for (const brewery of breweries) { //brew is the entire obj
     //so here I have access to EACH OBJ of EACH BREWERY, every cycle of the loop
