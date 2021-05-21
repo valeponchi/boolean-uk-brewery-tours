@@ -6,20 +6,34 @@
 1. ✔ get state from user, and reformat to: lowercase, underscore instead of space
 2.✔Make a fetch request 
 */
-//GLOBAL VARIABLES:
-let main = document.querySelector(`main`)
-//FUNCTION TO CREATE HTML EL
+
+//GENERAL FUNCTIONS
 function createEl(tag) {
   return document.createElement(tag)
 }
 
+function unique (array) {
+  return[...new Set(array)]
+}
+
+//GLOBAL VARIABLES:
+let main = document.querySelector(`main`)
+
+let citiesCreated = []
+let citiesClicked = []
+
 let state = {
-  breweries: []
+  userInput: "",
+  breweries: [],
+  filters: {
+    type: "",
+    name: "",
+    cities: []
+  }
 }
 
 //WHERE EVERYTHING STARTS:
-//here is *the fetch*
-//and all the functions to render the pg and its searches
+//here is *the fetch* & creates tha page
 function renderPage() {
   let searchFromUser
   const stateSearchFormEl = document.querySelector("#select-state-form")
@@ -33,38 +47,33 @@ function renderPage() {
     let userInput = stateToSearchInputEl.value
     userInput = userInput.toLowerCase().replace(" ", "_")
     searchFromUser = userInput
+    state.userInput = userInput
     // console.log(`User Input: `, userInput)
-    console.log(`Search from User: `, searchFromUser)
+    console.log(`state.userInput: `, state.userInput)
     
     //***FETCH WITH FILTER***
-    getUSBreweriesByStateFromServer(searchFromUser).then(function(breweriesFromServer) {
+    getUSBreweriesByStateFromServer(searchFromUser)
+    //WE GIVE NAME TO JS-DATA FROM SERVER SO WE CAN USE IT:
+    //INSIDE HERE I CAN GUARANTEE THE BREWERIES ARE BACK, SO I CAN FILTER BY TYPE AND STORE THEM:
+    .then(function(breweriesFromServer) {
       let filteredBreweries = breweriesFromServer.filter(function(brewery){
         return brewery.brewery_type === "brewpub" || 
                brewery.brewery_type === "regional" || 
                brewery.brewery_type === "micro"
-      //filteredBreweries has up to 50 breweries with the filters
-      //we give name to js-data-from-server
-      //HERE I CAN GUARANTEE THE BREWERIES ARE BACK 
-
-      //console.log(`This is breweriesFromServer not in the state yet: `, breweriesFromServer) //here we have the breweriesFromServer in js-obj
       })
-      //I only want to show 10 breweries to the user and then store them into the state.breweries:
-      let slicedBreweries = filteredBreweries.slice(0, 10)
-      state.breweries = slicedBreweries
-      //at this point, we have the STATE FILL with the list of breweries requested
-      console.log(`This is my state.breweries now, filtered and sliced: `, state.breweries)
+      state.breweries = filteredBreweries
+      console.log(`State.breweries after fetch filtered by type: `, state.breweries)
       
       stateSearchFormEl.reset()
 
-      createAsideInMain() // TO DO: 🧾📌 cities from server in the aside
-      createSearchFormMain() //user searches for words/name 
+      createAsideEl() 
+      createSearchFormMain()  
       createListOfBreweries(state.breweries)
     })
   })
 }
 
-//ADD= &per_page=10 // we don't put this in the fetch so we can fetch more than 10 to filter
-//SYNTAX: https://api.openbrewerydb.org/breweries?per_page=25
+//SYNTAX: https://api.openbrewerydb.org/breweries?per_page=25 // we want more than 10 cities to filter later
 //FUNCTION TO FETCH FROM SERVER
 function getUSBreweriesByStateFromServer (userStateInput) {
   return fetch(`https://api.openbrewerydb.org/breweries?by_state=${userStateInput}&per_page=50`)
@@ -74,11 +83,11 @@ function getUSBreweriesByStateFromServer (userStateInput) {
   })
 }
 
-//QUESTION:
-//in che checkboxes, we need all cities' names from server. // TO DO: 🧾📌
+//-------------------------------------------------------------------------------
+
+// search by type and by cities - TO DO: 🧾📌 
 //this function creates the ASIDE 
-//NEEDS: the filters by cities 
-function createAsideInMain () {
+function createAsideEl () {
    
    let  asideSectionEl = createEl(`aside`)
    asideSectionEl.setAttribute(`class`, `filters-section`)
@@ -98,11 +107,19 @@ function createAsideInMain () {
    let selectEl = createEl(`select`)
    selectEl.setAttribute(`name`, `filter-by-type`)
    selectEl.setAttribute(`id`, `filter-by-type`)
-   
-  // somewhere here the eventListener to show just the filtered-breweries selected by user // TO DO: 🧾📌
+
+
+  // 👂🏻 EVENT LISTENER BY TYPE
+  selectEl.addEventListener(`change`, function(){
+    console.log(`selectEl.target.value: `, selectEl.value)
+    state.filters.type = selectEl.value
+    createListOfBreweries(state.breweries)
+  })
+
 
    let optionSelectATypeEl = createEl(`option`)
    optionSelectATypeEl.setAttribute(`value`, `""`)
+
    optionSelectATypeEl.innerText = "Select a type..."
 
    let optionMicroEl = createEl(`option`)
@@ -126,19 +143,11 @@ function createAsideInMain () {
    let btnClearAllEl = createEl(`button`)
    btnClearAllEl.setAttribute(`class`, `clear-all-btn`)
    btnClearAllEl.innerText = `Clear all`
-
+   
+   
    let formFilterByCityEl = createEl(`form`)
    formFilterByCityEl.setAttribute(`id`, `filter-by-city-form`)
-   
-   //FOR-LOOP HERE !!! ------------------------------------------- <<<--- // TO DO: 🧾📌
-   //somewhere here eventListener to filter the breweries per city/ies selected by user // TO DO: 🧾📌
-   let inputCheckboxEl = createEl(`input`)
-   inputCheckboxEl.setAttribute(`type`, `checkbox`)
-   inputCheckboxEl.setAttribute(`name`, state.breweries.city) //here there will be the value NAME OF THE CITY
-   inputCheckboxEl.setAttribute(`value`, ``) 
 
-   let labelCityEl = createEl(`label`)
-   labelCityEl.setAttribute(`for`, ``) //same of the CITY NAME
    
    main.append(asideSectionEl)
    asideSectionEl.append(h2FilterTitleEl, filterFormEl, divFilterByCityEl, formFilterByCityEl)
@@ -146,12 +155,70 @@ function createAsideInMain () {
    filterFormEl.append(labelFilterByTypeEl, selectEl)
    selectEl.append(optionSelectATypeEl, optionMicroEl, optionReginalEl, optionBrewpub)
    divFilterByCityEl.append(h3TitleCitiesEl, btnClearAllEl)
-   formFilterByCityEl.append(inputCheckboxEl, labelCityEl)
-
-  //  console.log(asideSectionEl)
+   //  formFilterByCityEl.append(inputCheckboxEl, labelCityEl)
+   //  console.log(asideSectionEl)
+  
+   //💫FOR-LOOP HERE ⬇⬇⬇ 
+   renderCitiesInAside(state.breweries) //In here bc here it renders after El is created
 }
 
-//here user searches for words/name
+//FILTER city/ies TO DO: 🧾📌
+function renderCitiesInAside(breweries) {
+  let formFilterByCityEl = document.querySelector("#filter-by-city-form")
+  formFilterByCityEl.innerHTML = "" // checkbox not working after 1st search + CSS weird-------- BUG to FIX: ⭕❗
+  
+
+  //💫FOR-LOOP HERE ⬇⬇⬇ 
+  for (const brewery of breweries) {
+    //have we already created the city checkbox?
+    const checkboxNotExist = !citiesCreated.includes(brewery.city)
+    
+    if (checkboxNotExist) {
+      citiesCreated.push(brewery.city)
+    
+    let inputCheckboxEl = createEl(`input`)
+    inputCheckboxEl.setAttribute(`type`, `checkbox`)
+    inputCheckboxEl.setAttribute(`name`, brewery.city) 
+    inputCheckboxEl.setAttribute(`value`, brewery.city) 
+    //EVENT LISTENER CHECKBOX
+    inputCheckboxEl.addEventListener(`change`, function(e) {
+      //CREATE ARRAY OF CITIES CLICKED
+      let cityClicked = e.target.value
+      console.log(`city clicked - checkbox: `, cityClicked)
+      citiesClicked.push(cityClicked)
+      console.log(`cities clicked - checkbox: `, citiesClicked)
+      //////////// IMAGES UP HERE TO CREATE AN ARRAY WITH ALL CHE CITIES CLICKED///
+
+      let citiesClickedNoDoubles = unique(citiesClicked)
+          console.log(`citiesClickedNoDoubles: `, citiesClickedNoDoubles)
+          citiesClickedNoDoubles = citiesClickedNoDoubles.sort()
+          console.log(`citiesClickedNoDoublesSORTED: `, citiesClickedNoDoubles)
+     
+          citiesClicked = citiesClickedNoDoubles
+          //now in cityClicked I have the list w/o doubles and in a-z order
+     
+          console.log(`cityClicked SORTED: `, citiesClicked)
+
+
+      ////////////IN HERE THE CITIES CLICKED ARE FOR SURE W/O DOUBLES AND SORTED//////
+    })
+
+    let labelCityEl = createEl(`label`)
+    labelCityEl.setAttribute(`for`, brewery.city) 
+    labelCityEl.setAttribute(`name`, brewery.city) 
+    labelCityEl.setAttribute(`value`, brewery.city) 
+    labelCityEl.innerText = brewery.city
+
+    formFilterByCityEl.append(inputCheckboxEl, labelCityEl)
+  }
+ }
+
+}
+
+
+//-------------------------------------------------------------------------------
+
+//FILTER words/name TO DO: 🧾📌 
 function createSearchFormMain() {
   let h1ListSectionEl = createEl(`h1`)
   h1ListSectionEl.innerText = "List of Breweries"
@@ -187,17 +254,27 @@ function createSearchFormMain() {
   labelSearchHeader.append(h2LabelSearchHeaderEl)
   articleListEl.append(ulListOfBreweries)
 }
-
+//-------------------------------------------------------------------------------
 function createListOfBreweries(breweries) {
   // RESET THE LIST OF PREVIOUS SEARCHES:
   let ulListOfBreweries = document.querySelector(`.breweries-list`)
   ulListOfBreweries.innerHTML = ""
-
+  
+  //💫 FOR LOOP:
   for (const brewery of breweries) { //brew is the entire obj
-    //so here I have access to EACH OBJ of EACH BREWERY, for every cycle of the loop:
-    create1BrewOfBreweries(brewery) 
-    console.log(brewery)
-  }
+    if (state.filters.type === brewery.brewery_type || state.filters.type === ""){
+      //so here I have access to EACH OBJ of EACH BREWERY, for every cycle of the loop:
+      create1BrewOfBreweries(brewery) 
+      console.log(brewery)
+    } else {
+      continue
+    }
+  } 
+
+
+  // WE WANT TO RENDER ONYL 10 BREWERIES PER PAGE:
+  let slicedBreweries = breweries.slice(0, 10)
+  console.log(`breweries rendered`, slicedBreweries)
 }
 
 // this is inside createListofBreweries()
@@ -246,6 +323,7 @@ function create1BrewOfBreweries(brewery) {
   let aElBrewWebsite = createEl(`a`)
   aElBrewWebsite.setAttribute(`href`, brewery.website_url)
   aElBrewWebsite.setAttribute(`target`, `_blank`)
+  aElBrewWebsite.setAttribute(`href`, brewery.website_url)
   aElBrewWebsite.innerText = "Visit Website"
 
   
@@ -256,5 +334,7 @@ function create1BrewOfBreweries(brewery) {
   sectionBrewLink.append(aElBrewWebsite)
   ulListOfBreweries.append(liBreweryEl)
 }
+
+//-------------------------------------------------------------------------------
 
 renderPage()
