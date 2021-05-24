@@ -1,6 +1,3 @@
-// LEGEND:
-// TO DO: 🧾📌
-// BUG to FIX: ⭕❗
 
 /*
 1.✔ get state from user, and reformat to: lowercase, underscore instead of space
@@ -32,7 +29,6 @@ let state = {
 }
 
 //WHERE EVERYTHING STARTS:
-//here is *the fetch* & creates tha page
 function renderPage() {
   let searchFromUser
   const stateSearchFormEl = document.querySelector("#select-state-form")
@@ -73,7 +69,7 @@ function renderPage() {
 }
 
 //SYNTAX: https://api.openbrewerydb.org/breweries?per_page=25 // we want more than 10 cities to filter later
-//FUNCTION TO FETCH FROM SERVER
+//f FETCH FROM SERVER
 function getUSBreweriesByStateFromServer (userStateInput) {
   return fetch(`https://api.openbrewerydb.org/breweries?by_state=${userStateInput}&per_page=50`)
   .then(function (response) {
@@ -82,10 +78,6 @@ function getUSBreweriesByStateFromServer (userStateInput) {
   })
 }
 
-//-------------------------------------------------------------------------------
-
-// search by type and by cities - TO DO: 🧾📌 
-//this function creates the ASIDE 
 function createAsideEl () {
    
    let  asideSectionEl = createEl(`aside`)
@@ -162,30 +154,27 @@ function createAsideEl () {
    renderCitiesInAside(state.breweries) //In here bc here it renders after El is created
 }
 
-//FILTER city/ies TO DO: 🧾📌
-function renderCitiesInAside(breweries) {
+function renderCitiesInAside() {
   let formFilterByCityEl = document.querySelector("#filter-by-city-form")
   formFilterByCityEl.innerHTML = ""
-
+  
+  //ALL CITIES IN BREWERIES FROM THE FETCH
   const repeatedCities = state.breweries.map(function (brewery) {
-    return brewery.city
-  })
-
+    return brewery.city})
+  
+  //NO REPETIION + A-Z ORDER
   const uniqueCities = unique(repeatedCities)
   const sortedCities = uniqueCities.slice().sort()
-  //💫FOR-LOOP HERE ⬇⬇⬇ 
+  
   for (const city of sortedCities) {
-    //ARRAY citiesCreated with cities to render, NO DOUBLES.
-    //Is brewery.city in citiesCreated? no? -> we need to render that box!
-    const checkboxToRender = !citiesCreated.includes(city)
-    if (checkboxToRender) { //if that's true, then:
+    const cityToRender = !citiesCreated.includes(city)
+    if (cityToRender) { //if that's true, then:
       citiesCreated.push(city) //push that city into citiesCreated.
     
     let inputCheckboxEl = createEl(`input`)
     inputCheckboxEl.setAttribute(`type`, `checkbox`)
     inputCheckboxEl.setAttribute(`name`, city) 
     inputCheckboxEl.setAttribute(`value`, city) 
-
 
     //EVENT LISTENER CHECKBOX
     inputCheckboxEl.addEventListener(`change`, function(e) {
@@ -195,15 +184,13 @@ function renderCitiesInAside(breweries) {
       
       if (!state.filters.cities.find(element => element === cityClicked)) {
         state.filters.cities.push(cityClicked)
+        console.log(`state.filters.cities con cityClicked`, state.filters.cities)
         
-        let CitiesNoDoubles = unique(state.filters.cities)
-        // console.log(`CitiesNoDoubles: `, CitiesNoDoubles)
-          CitiesNoDoubles = CitiesNoDoubles.sort()
-          // console.log(`CitiesNoDoubles -A to Z SORTED: `, CitiesNoDoubles)
+        // let CitiesNoDoubles = unique(state.filters.cities)
+        // //   CitiesNoDoubles = CitiesNoDoubles.sort()
           
-          //STATE.FILTERS.CITY HAS AN ARRAY WITH CLICKED CITIES (no doubles/alphanitically listed)
-          state.filters.cities = CitiesNoDoubles
-          // console.log(`state.filters.cities NOW: `, state.filters.cities)
+        //   state.filters.cities = CitiesNoDoubles
+        //   console.log(`state.filters.cities NOW: `, state.filters.cities)
 
           let breweriesToRender = state.breweries;
           
@@ -215,23 +202,24 @@ function renderCitiesInAside(breweries) {
             createListOfBreweries(breweriesToRender)
           }
           
-        } else {
-          for( var i = 0; i < state.filters.cities.length; i++){ 
-                                   
-            if ( state.filters.cities.length[i] === cityClicked) { 
-                state.filters.cities.length.splice(i, 1); 
-                i--; 
-            }
-            createListOfBreweries(state.filters.cities)
-          }
-        //se e' gia dentro l array --> RIMUOVI
-        
+      } else {
+            let breweriesToRender = state.breweries;
 
-      }
-      //CREATE ARRAY OF CITIES CLICKED
-      // console.log(`state.filters.cities: `, state.filters.cities)
-      
-      })
+            state.filters.cities = state.filters.cities.filter(element => element !== cityClicked) 
+            console.log(state.filters.cities)
+            if (state.filters.cities.length > 0) {
+              // code here depends on filter cities
+              breweriesToRender = breweriesToRender.filter(function (brewery) {
+                return state.filters.cities.includes(brewery.city);
+              })
+              createListOfBreweries(breweriesToRender)
+            } else {
+              createListOfBreweries(state.breweries)
+            }
+
+          }
+        } //event listener
+      )
 
 
       let labelCityEl = createEl(`label`)
@@ -241,9 +229,9 @@ function renderCitiesInAside(breweries) {
       labelCityEl.innerText = city
 
       formFilterByCityEl.append(inputCheckboxEl, labelCityEl)
-    }
-  }
-}
+    }//if
+  }//for loop
+}//function
 
 
 //-------------------------------------------------------------------------------
