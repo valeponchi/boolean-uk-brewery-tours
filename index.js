@@ -199,10 +199,19 @@ function renderCitiesInAside(breweries) {
           CitiesNoDoubles = CitiesNoDoubles.sort()
           console.log(`CitiesNoDoubles -A to Z SORTED: `, CitiesNoDoubles)
       
-          //cityClicked is w/o doubles and in a-z order
+          //STATE.FILTERS.CITY HAS AN ARRAY WITH CLICKED CITIES (no doubles/alphanitically listed)
           state.filters.cities = CitiesNoDoubles
           console.log(`state.filters.cities NOW: `, state.filters.cities)
 
+          let breweriesToRender = state.breweries;
+
+          if (state.filters.cities.length > 0) {
+            // code here depends on filter cities
+            breweriesToRender = breweriesToRender.filter(function (brewery) {
+              return state.filters.cities.includes(brewery.city);
+            })
+            createListOfBreweries(breweriesToRender)
+          }
       })
 
 
