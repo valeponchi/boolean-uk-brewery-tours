@@ -3,8 +3,8 @@
 // BUG to FIX: ⭕❗
 
 /*
-1. ✔ get state from user, and reformat to: lowercase, underscore instead of space
-2.✔Make a fetch request 
+1.✔ get state from user, and reformat to: lowercase, underscore instead of space
+2.✔ Make a fetch request 
 */
 
 //GENERAL FUNCTIONS
@@ -20,7 +20,6 @@ function unique (array) {
 let main = document.querySelector(`main`)
 
 let citiesCreated = []
-let citiesClicked = []
 
 let state = {
   userInput: "",
@@ -41,7 +40,7 @@ function renderPage() {
   const stateToSearchInputEl = document.querySelector("#select-state")
   // console.log(stateToSearchInputEl)
   
-  //HERE IS THE FORM WITH THE FETCH-STATE
+  //👂🏻HERE IS THE FORM WITH THE FETCH-STATE
   stateSearchFormEl.addEventListener("submit", function (e) {
     e.preventDefault()
     let userInput = stateToSearchInputEl.value
@@ -165,54 +164,57 @@ function createAsideEl () {
 //FILTER city/ies TO DO: 🧾📌
 function renderCitiesInAside(breweries) {
   let formFilterByCityEl = document.querySelector("#filter-by-city-form")
-  formFilterByCityEl.innerHTML = "" // checkbox not working after 1st search + CSS weird-------- BUG to FIX: ⭕❗
-  
+  formFilterByCityEl.innerHTML = ""
 
+  const repeatedCities = state.breweries.map(function (brewery) {
+    return brewery.city
+  })
+
+  const uniqueCities = unique(repeatedCities)
+  const sortedCities = uniqueCities.slice().sort()
   //💫FOR-LOOP HERE ⬇⬇⬇ 
-  for (const brewery of breweries) {
-    //have we already created the city checkbox?
-    const checkboxNotExist = !citiesCreated.includes(brewery.city)
-    
-    if (checkboxNotExist) {
-      citiesCreated.push(brewery.city)
+  for (const city of sortedCities) {
+    //ARRAY citiesCreated with cities to render, NO DOUBLES.
+    //Is brewery.city in citiesCreated? no? -> we need to render that box!
+    const checkboxToRender = !citiesCreated.includes(city)
+    if (checkboxToRender) { //if that's true, then:
+      citiesCreated.push(city) //push that city into citiesCreated.
     
     let inputCheckboxEl = createEl(`input`)
     inputCheckboxEl.setAttribute(`type`, `checkbox`)
-    inputCheckboxEl.setAttribute(`name`, brewery.city) 
-    inputCheckboxEl.setAttribute(`value`, brewery.city) 
+    inputCheckboxEl.setAttribute(`name`, city) 
+    inputCheckboxEl.setAttribute(`value`, city) 
+
+
     //EVENT LISTENER CHECKBOX
     inputCheckboxEl.addEventListener(`change`, function(e) {
+      
       //CREATE ARRAY OF CITIES CLICKED
       let cityClicked = e.target.value
-      console.log(`city clicked - checkbox: `, cityClicked)
-      citiesClicked.push(cityClicked)
-      console.log(`cities clicked - checkbox: `, citiesClicked)
-      //////////// IMAGES UP HERE TO CREATE AN ARRAY WITH ALL CHE CITIES CLICKED///
+      console.log(`checkbox clicked(city): `, cityClicked)
+      state.filters.cities.push(cityClicked)
+      console.log(`state.filters.cities: `, state.filters.cities)
+      let CitiesNoDoubles = unique(state.filters.cities)
+          console.log(`CitiesNoDoubles: `, CitiesNoDoubles)
+          CitiesNoDoubles = CitiesNoDoubles.sort()
+          console.log(`CitiesNoDoubles -A to Z SORTED: `, CitiesNoDoubles)
+      
+          //cityClicked is w/o doubles and in a-z order
+          state.filters.cities = CitiesNoDoubles
+          console.log(`state.filters.cities NOW: `, state.filters.cities)
 
-      let citiesClickedNoDoubles = unique(citiesClicked)
-          console.log(`citiesClickedNoDoubles: `, citiesClickedNoDoubles)
-          citiesClickedNoDoubles = citiesClickedNoDoubles.sort()
-          console.log(`citiesClickedNoDoublesSORTED: `, citiesClickedNoDoubles)
-     
-          citiesClicked = citiesClickedNoDoubles
-          //now in cityClicked I have the list w/o doubles and in a-z order
-     
-          console.log(`cityClicked SORTED: `, citiesClicked)
+      })
 
 
-      ////////////IN HERE THE CITIES CLICKED ARE FOR SURE W/O DOUBLES AND SORTED//////
-    })
+      let labelCityEl = createEl(`label`)
+      labelCityEl.setAttribute(`for`, city) 
+      labelCityEl.setAttribute(`name`, city) 
+      labelCityEl.setAttribute(`value`, city) 
+      labelCityEl.innerText = city
 
-    let labelCityEl = createEl(`label`)
-    labelCityEl.setAttribute(`for`, brewery.city) 
-    labelCityEl.setAttribute(`name`, brewery.city) 
-    labelCityEl.setAttribute(`value`, brewery.city) 
-    labelCityEl.innerText = brewery.city
-
-    formFilterByCityEl.append(inputCheckboxEl, labelCityEl)
+      formFilterByCityEl.append(inputCheckboxEl, labelCityEl)
+    }
   }
- }
-
 }
 
 
@@ -270,8 +272,6 @@ function createListOfBreweries(breweries) {
       continue
     }
   } 
-
-
   // WE WANT TO RENDER ONYL 10 BREWERIES PER PAGE:
   let slicedBreweries = breweries.slice(0, 10)
   console.log(`breweries rendered`, slicedBreweries)
