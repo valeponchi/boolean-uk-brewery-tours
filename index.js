@@ -61,7 +61,7 @@ function renderPage() {
                brewery.brewery_type === "micro"
       })
       state.breweries = filteredBreweries
-      console.log(`State.breweries after fetch filtered by type: `, state.breweries)
+      // console.log(`State.breweries after fetch filtered by type: `, state.breweries)
       
       stateSearchFormEl.reset()
 
@@ -110,7 +110,7 @@ function createAsideEl () {
 
   // 👂🏻 EVENT LISTENER BY TYPE
   selectEl.addEventListener(`change`, function(){
-    console.log(`selectEl.target.value: `, selectEl.value)
+    // console.log(`selectEl.target.value: `, selectEl.value)
     state.filters.type = selectEl.value
     createListOfBreweries(state.breweries)
   })
@@ -146,6 +146,7 @@ function createAsideEl () {
    
    let formFilterByCityEl = createEl(`form`)
    formFilterByCityEl.setAttribute(`id`, `filter-by-city-form`)
+   formFilterByCityEl.setAttribute(`name`, `filter-city-form`)
 
    
    main.append(asideSectionEl)
@@ -188,23 +189,24 @@ function renderCitiesInAside(breweries) {
 
     //EVENT LISTENER CHECKBOX
     inputCheckboxEl.addEventListener(`change`, function(e) {
-      
-      //CREATE ARRAY OF CITIES CLICKED
+      console.log(e)
       let cityClicked = e.target.value
       console.log(`checkbox clicked(city): `, cityClicked)
-      state.filters.cities.push(cityClicked)
-      console.log(`state.filters.cities: `, state.filters.cities)
-      let CitiesNoDoubles = unique(state.filters.cities)
-          console.log(`CitiesNoDoubles: `, CitiesNoDoubles)
-          CitiesNoDoubles = CitiesNoDoubles.sort()
-          console.log(`CitiesNoDoubles -A to Z SORTED: `, CitiesNoDoubles)
       
+      if (!state.filters.cities.find(element => element === cityClicked)) {
+        state.filters.cities.push(cityClicked)
+        
+        let CitiesNoDoubles = unique(state.filters.cities)
+        // console.log(`CitiesNoDoubles: `, CitiesNoDoubles)
+          CitiesNoDoubles = CitiesNoDoubles.sort()
+          // console.log(`CitiesNoDoubles -A to Z SORTED: `, CitiesNoDoubles)
+          
           //STATE.FILTERS.CITY HAS AN ARRAY WITH CLICKED CITIES (no doubles/alphanitically listed)
           state.filters.cities = CitiesNoDoubles
-          console.log(`state.filters.cities NOW: `, state.filters.cities)
+          // console.log(`state.filters.cities NOW: `, state.filters.cities)
 
           let breweriesToRender = state.breweries;
-
+          
           if (state.filters.cities.length > 0) {
             // code here depends on filter cities
             breweriesToRender = breweriesToRender.filter(function (brewery) {
@@ -212,6 +214,23 @@ function renderCitiesInAside(breweries) {
             })
             createListOfBreweries(breweriesToRender)
           }
+          
+        } else {
+          for( var i = 0; i < state.filters.cities.length; i++){ 
+                                   
+            if ( state.filters.cities.length[i] === cityClicked) { 
+                state.filters.cities.length.splice(i, 1); 
+                i--; 
+            }
+            createListOfBreweries(state.filters.cities)
+          }
+        //se e' gia dentro l array --> RIMUOVI
+        
+
+      }
+      //CREATE ARRAY OF CITIES CLICKED
+      // console.log(`state.filters.cities: `, state.filters.cities)
+      
       })
 
 
@@ -276,14 +295,14 @@ function createListOfBreweries(breweries) {
     if (state.filters.type === brewery.brewery_type || state.filters.type === ""){
       //so here I have access to EACH OBJ of EACH BREWERY, for every cycle of the loop:
       create1BrewOfBreweries(brewery) 
-      console.log(brewery)
+      // console.log(brewery)
     } else {
       continue
     }
   } 
   // WE WANT TO RENDER ONYL 10 BREWERIES PER PAGE:
   let slicedBreweries = breweries.slice(0, 10)
-  console.log(`breweries rendered`, slicedBreweries)
+  // console.log(`breweries rendered`, slicedBreweries)
 }
 
 // this is inside createListofBreweries()
